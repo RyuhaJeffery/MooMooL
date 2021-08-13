@@ -66,16 +66,16 @@ class _CallPageState extends State<CallPage_taker> {
     VideoEncoderConfiguration configuration = VideoEncoderConfiguration();
     //configuration.dimensions = VideoDimensions(1920, 1080);
     await _engine.setVideoEncoderConfiguration(configuration);
-    await _engine.joinChannel(Token, widget.channelName!, null, 0);
+    await _engine.joinChannel(null, widget.channelName!, null, 0);
   }
 
   /// Create agora sdk instance and initialize
   Future<void> _initAgoraRtcEngine() async {
     _engine = await RtcEngine.create(APP_ID);
     await _engine.enableVideo();
-    await _engine.setChannelProfile(ChannelProfile.Communication);
+    await _engine.setChannelProfile(ChannelProfile.LiveBroadcasting);
     //만약에 1to1으로 만들려면 LiveBroadcasting이거 대신에 Communication으로 넣으면 일대일이 가능해짐
-    //await _engine.setClientRole(widget.role!);
+    await _engine.setClientRole(ClientRole.Broadcaster);
   }
 
   /// Add agora event handlers
@@ -168,8 +168,9 @@ class _CallPageState extends State<CallPage_taker> {
   List<Widget> _getRenderViews() {
     final List<StatefulWidget> list = [];
     //if (widget.role == ClientRole.Broadcaster) {}
-    list.add(RtcLocalView.SurfaceView());
-    _users.forEach((int uid) => list.add(RtcRemoteView.SurfaceView(uid: uid)));
+    list.add(RtcLocalView.SurfaceView(renderMode: VideoRenderMode.FILL));
+    _users.forEach((int uid) => list.add(
+        RtcRemoteView.SurfaceView(uid: uid, renderMode: VideoRenderMode.FILL)));
     return list;
   }
 
@@ -194,17 +195,21 @@ class _CallPageState extends State<CallPage_taker> {
     switch (views.length) {
       case 1:
         return Container(
-            child: Column(
-          children: <Widget>[_videoView(views[0])],
-        ));
+          child: Column(
+            children: <Widget>[
+              _videoView(views[0]),
+            ],
+          ),
+        );
       case 2:
         return Container(
-            child: Column(
-          children: <Widget>[
-            _expandedVideoRow([views[0]])
-            //_expandedVideoRow([views[1]])
-          ],
-        ));
+          child: Column(
+            children: <Widget>[
+              _expandedVideoRow([views[0]]),
+              //_expandedVideoRow([views[1]])
+            ],
+          ),
+        );
       // case 3:
       //   return Container(
       //       child: Column(
